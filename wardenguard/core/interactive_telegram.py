@@ -344,14 +344,7 @@ class InteractiveTelegramBot:
 
         elif data == "btn_system":
             if self.system_monitor:
-                m = self.system_monitor.get_system_metrics()
-                reply = (
-                    f"🖥️ *Sunucu Donanım Metrikleri:*\n"
-                    f"━━━━━━━━━━━━━━━━━━━━━━\n"
-                    f"• *CPU Yükü:* `%{m['cpu']}`\n"
-                    f"• *RAM Kullanımı:* `%{m['ram']}`\n"
-                    f"• *Disk Doluluğu:* `%{m['disk']}`"
-                )
+                reply = self.system_monitor.format_detailed_report()
             else:
                 reply = "Donanım monitörü aktif değil."
             await self.send_message(reply)
@@ -466,14 +459,7 @@ class InteractiveTelegramBot:
 
         elif cmd == "/system":
             if self.system_monitor:
-                m = self.system_monitor.get_system_metrics()
-                reply = (
-                    f"🖥️ *Sunucu Donanım Metrikleri:*\n"
-                    f"━━━━━━━━━━━━━━━━━━━━━━\n"
-                    f"• *CPU Yükü:* `%{m['cpu']}`\n"
-                    f"• *RAM Kullanımı:* `%{m['ram']}`\n"
-                    f"• *Disk Doluluğu:* `%{m['disk']}`"
-                )
+                reply = self.system_monitor.format_detailed_report()
             else:
                 reply = "Donanım monitörü aktif değil."
             await self.send_message(reply)
