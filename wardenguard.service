@@ -1,0 +1,17 @@
+[Unit]
+Description=WardenGuard Autonomous Server Security & Telegram IPS
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/wardenguard
+ExecStart=/usr/bin/python3 /opt/wardenguard/main.py
+Restart=always
+RestartSec=5
+KillMode=process
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

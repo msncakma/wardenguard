@@ -1,0 +1,74 @@
+# ==========================================================
+# WardenGuard Configuration Template
+# ==========================================================
+
+general:
+  service_name: "WardenGuard"
+  debug: false
+  dry_run: false
+
+telegram:
+  enabled: true
+  bot_token: "YOUR_BOT_TOKEN_HERE"
+  admin_chat_id: "YOUR_CHAT_ID_HERE"
+  notifications:
+    ssh_success: true
+    ssh_failure: true
+    session_closed: false
+    sudo_command: true
+    nginx_threats: true
+    honeypot_hit: true
+    system_alerts: true
+    bans: true
+    blocklist_sync: true
+
+threat_detection:
+  threshold_score: 100
+  decay_window_seconds: 300
+  whitelist:
+    - "127.0.0.1"
+    - "::1"
+    - "100.64.0.0/10"       # Tailscale IPv4
+    - "fd7a:115c:a1e0::/48" # Tailscale IPv6
+
+system_health:
+  enabled: true
+  cpu_threshold: 95.0
+  ram_threshold: 95.0
+  disk_threshold: 90.0
+  check_interval: 10.0
+
+network_flood:
+  enabled: true
+  syn_flood_pps: 250
+  udp_flood_pps: 600
+  check_interval: 2.0
+
+honeypot:
+  enabled: true
+  trap_ports:
+    - 23    # Telnet
+    - 21    # FTP
+    - 3389  # RDP
+    - 6379  # Redis
+
+blocklist:
+  enabled: true
+  mode: "7d"
+  sync_interval_hours: 24.0
+
+tor_proxy:
+  enabled: true
+  sync_interval_hours: 12.0
+
+nginx:
+  enabled: true
+  log_path: "/var/log/nginx/access.log"
+
+abuseipdb:
+  enabled: true
+  api_key: "YOUR_ABUSEIPDB_API_KEY_HERE"
+  auto_report_all_threats: true
+
+firewall:
+  ipset_name: "wardenguard_blacklist"
