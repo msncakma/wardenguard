@@ -151,7 +151,10 @@ class FirewallEngine:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        await proc.communicate(input=restore_payload.encode("utf-8"))
+        try:
+            await proc.communicate(input=restore_payload.encode("utf-8"))
+        except BrokenPipeError:
+            pass
 
         # 3. Ana ipset yoksa olustur
         await self._run_command(["ipset", "create", ipset_name, "hash:ip", "maxelem", str(maxelem), "-exist"], check=False)
