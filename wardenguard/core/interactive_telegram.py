@@ -289,7 +289,10 @@ class InteractiveTelegramBot:
             await self._answer_callback(query_id, "❌ Yetkisiz işlem!")
             return
 
-        await self._answer_callback(query_id, "Ayar güncelleniyor...")
+        if data.startswith("toggle_"):
+            await self._answer_callback(query_id, "Ayar güncelleniyor...")
+        else:
+            await self._answer_callback(query_id)
 
         # Ayar Değiştirme Butonları (Toggle Switches)
         if data.startswith("toggle_"):
@@ -312,6 +315,10 @@ class InteractiveTelegramBot:
 
         elif data == "btn_back_menu":
             await self.send_dashboard()
+            return
+
+        elif data == "btn_status":
+            await self._send_security_status()
             return
 
         elif data == "btn_settings":
@@ -424,14 +431,7 @@ class InteractiveTelegramBot:
             await self._send_help()
 
         elif cmd == "/status":
-            banned = self.firewall.list_banned()
-            reply = (
-                f"📊 *WardenGuard Güvenlik Raporu:*\n"
-                f"━━━━━━━━━━━━━━━━━━━━━━\n"
-                f"• *Aktif Banlı Saldırgan:* `{len(banned)}`\n"
-                f"• *Firewall Engine:* `{'DRY-RUN (Simülasyon)' if self.firewall.dry_run else 'KERNEL (ipset/iptables)'}`"
-            )
-            await self.send_message(reply)
+            await self._send_security_status()
 
         elif cmd == "/ufw":
             u = await self.ufw_f2b.get_ufw_status()
@@ -555,6 +555,38 @@ class InteractiveTelegramBot:
                 [
                     {"text": "🚫 Banla" if not is_banned else "✅ Engeli Kaldır", "callback_data": f"unban_{target_ip}" if is_banned else f"ban_{target_ip}"},
                     {"text": "⚪ Whitelist", "callback_data": f"whitelist_{target_ip}"}
+                ]
+            ]
+        }
+        await self.send_message(reply, reply_markup=keyboard)
+
+    async def _send_security_status(self) -> None:
+        banned = list(self.firewall.list_banned())
+        engine = "DRY-RUN (Simülasyon)" if self.firewall.dry_run else "KERNEL (ipset/iptables)"
+        tracked_count = len(self.threat_detector._records) if hasattr(self.threat_detector, "_records") else 0
+        whitelist_count = len(self.threat_detector._whitelist) if hasattr(self.threat_detector, "_whitelist") else 0
+        honeypot_status = "🟢 AKTİF" if self.app_config.get("honeypot", {}).get("enabled", True) else "🔴 PASİF"
+        abuse_status = "🟢 AKTİF" if (self.abuseipdb and self.abuseipdb.enabled) else "⚪ DEVRE DIŞI"
+
+        reply = (
+            f"📊 *WardenGuard Güvenlik Raporu:*\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"• *Güvenlik Durumu:* `🟢 KORUMA ALTINDA`\n"
+            f"• *Firewall Motoru:* `{engine}`\n"
+            f"• *Aktif Banlı IP Sayısı:* `{len(banned)}`\n"
+            f"• *İzlenen Şüpheli IP:* `{tracked_count}`\n"
+            f"• *Beyaz Liste (Whitelist):* `{whitelist_count}` IP\n"
+            f"• *SSH/Web Honeypot:* `{honeypot_status}`\n"
+            f"• *AbuseIPDB Entegrasyonu:* `{abuse_status}`"
+        )
+        keyboard = {
+            "inline_keyboard": [
+                [
+                    {"text": "🚫 Ban Listesini Gör", "callback_data": "btn_bans"},
+                    {"text": "🔥 UFW Durumu", "callback_data": "btn_ufw"}
+                ],
+                [
+                    {"text": "⬅️ Ana Menüye Dön", "callback_data": "btn_back_menu"}
                 ]
             ]
         }
